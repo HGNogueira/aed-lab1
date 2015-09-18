@@ -34,7 +34,7 @@
  *****************************************************************************/
 void quick_find(int *id, int N, FILE * fp)
 {
-  int op_cnt = 0;
+  int f_cnt = 0, u_cnt = 0;
   int i, p, q, t;
   int pairs_cnt = 0;            /* connection pairs counter */
   int links_cnt = 0;            /* number of links counter */
@@ -47,24 +47,27 @@ void quick_find(int *id, int N, FILE * fp)
   while (fscanf(fp, "%d %d", &p, &q) == 2) {
     pairs_cnt++;
     /* do search first */
+    f_cnt++;/* find operation */
     if (id[p] == id[q]) {
       /* already in the same set; discard */
-      op_cnt++;
       printf("\t%d %d\n", p, q);
       continue;
     }
 
     /* pair has new info; must perform union */
-    for (t = id[p], i = 0; i < N; i++)
-      op_cnt++;
-      if (id[i] == t)
+    for (t = id[p], i = 0; i < N; i++) {
+      u_cnt++;/* reading union operation */
+      if (id[i] == t) {
+        u_cnt++;/* writing union op */
         id[i] = id[q];
+      }
+    }   
     links_cnt++;
     printf(" %d %d\n", p, q);
   }
   printf("QF: The number of links performed is %d for %d input pairs.\n",
          links_cnt, pairs_cnt);
-  printf("Total number of table rw operations: %d\n", op_cnt);
+  fprintf(stdout, "Number of nodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
 }
 
 
@@ -83,7 +86,7 @@ void quick_find(int *id, int N, FILE * fp)
  *****************************************************************************/
 void quick_union(int *id, int N, FILE * fp)
 {
-
+  int f_cnt = 0, u_cnt = 0;
   int i, j, p, q;
   int pairs_cnt = 0;            /* connection pairs counter */
   int links_cnt = 0;            /* number of links counter */
@@ -99,11 +102,16 @@ void quick_union(int *id, int N, FILE * fp)
     j = q;
 
     /* do search first */
-    while (i != id[i])
+    while (i != id[i]) {
+      f_cnt++;/* finding p's root node */
       i = id[i];
-    while (j != id[j])
+    }
+    while (j != id[j]) {
+      f_cnt++;/* finding q's root node */
       j = id[j];
+    }
 
+    f_cnt++;/* find whether they are in same set */
     if (i == j) {
       /* already in the same set; discard */
       printf("\t%d %d\n", p, q);
@@ -111,6 +119,7 @@ void quick_union(int *id, int N, FILE * fp)
     }
 
     /* pair has new info; must perform union */
+    u_cnt++;/* performing union if same root node */
     id[i] = j;
     links_cnt++;
 
@@ -118,6 +127,7 @@ void quick_union(int *id, int N, FILE * fp)
   }
   printf("QU: The number of links performed is %d for %d input pairs.\n",
          links_cnt, pairs_cnt);
+  fprintf(stdout, "Number of nodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
 }
 
 
@@ -136,7 +146,7 @@ void quick_union(int *id, int N, FILE * fp)
  *****************************************************************************/
 void weighted_quick_union(int *id, int N, FILE * fp)
 {
-  int op_cnt = 0;
+  int f_cnt = 0, u_cnt = 0;
   int i, j, p, q;
   int *sz = (int *) malloc(N * sizeof(int));
   int pairs_cnt = 0;            /* connection pairs counter */
@@ -154,8 +164,11 @@ void weighted_quick_union(int *id, int N, FILE * fp)
 
     /* do search first */
     for (i = p; i != id[i]; i = id[i]);
+        f_cnt++;/* finding the root node */
     for (j = q; j != id[j]; j = id[j]);
+        f_cnt++;/* finding the root node */
 
+    f_cnt++;/* (find op), know whether same root node */
     if (i == j) {
       /* already in the same set; discard */
       printf("\t%d %d\n", p, q);
@@ -164,11 +177,15 @@ void weighted_quick_union(int *id, int N, FILE * fp)
 
     /* pair has new info; must perform union; pick right direction */
     if (sz[i] < sz[j]) {
+      u_cnt++;/* (union op) p pointing to q */
       id[i] = j;
+      u_cnt++;/* (union op) adding new info to size table */
       sz[j] += sz[i];
     }
     else {
+      u_cnt++;/* (union op) q pointing to p */
       id[j] = i;
+      u_cnt++;/* (union op) adding new info to size table */
       sz[i] += sz[j];
     }
     links_cnt++;
@@ -177,6 +194,7 @@ void weighted_quick_union(int *id, int N, FILE * fp)
   }
   printf("WQU: The number of links performed is %d for %d input pairs.\n",
          links_cnt, pairs_cnt);
+  fprintf(stdout, "Number of nodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
 }
 
 
@@ -195,7 +213,7 @@ void weighted_quick_union(int *id, int N, FILE * fp)
  *****************************************************************************/
 void compressed_weighted_quick_union(int *id, int N, FILE * fp)
 {
-
+  int f_cnt = 0, u_cnt = 0;
   int i, j, p, q, t, x;
   int *sz = (int *) malloc(N * sizeof(int));
   int pairs_cnt = 0;            /* connection pairs counter */
@@ -215,6 +233,7 @@ void compressed_weighted_quick_union(int *id, int N, FILE * fp)
     for (i = p; i != id[i]; i = id[i]);
     for (j = q; j != id[j]; j = id[j]);
 
+    f_cnt++;/* (find op), know whether same root node */
     if (i == j) {
       /* already in the same set; discard */
       printf("\t%d %d\n", p, q);
@@ -223,12 +242,16 @@ void compressed_weighted_quick_union(int *id, int N, FILE * fp)
 
     /* pair has new info; must perform union; pick right direction */
     if (sz[i] < sz[j]) {
+      u_cnt++;/* (union op) p pointing to q */
       id[i] = j;
+      u_cnt++;/* (union op) adding new info to size table */
       sz[j] += sz[i];
       t = j;
     }
     else {
+      u_cnt++;/* (union op) q pointing to p */
       id[j] = i;
+      u_cnt++;/* (union op) adding new info to size table */
       sz[i] += sz[j];
       t = i;
     }
@@ -237,14 +260,17 @@ void compressed_weighted_quick_union(int *id, int N, FILE * fp)
     /* retrace the path and compress to the top */
     for (i = p; i != id[i]; i = x) {
       x = id[i];
+      u_cnt++;/* compression procedure */
       id[i] = t;
     }
     for (j = q; j != id[j]; j = x) {
       x = id[j];
+      u_cnt++;/* compression procedure */
       id[j] = t;
     }
     printf(" %d %d\n", p, q);
   }
   printf("CWQU: The number of links performed is %d for %d input pairs.\n",
          links_cnt, pairs_cnt);
+  fprintf(stdout, "Number of nodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
 }
