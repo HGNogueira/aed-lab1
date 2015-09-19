@@ -34,13 +34,14 @@
  *****************************************************************************/
 void quick_find(int *id, int N, FILE * fp)
 {
+  int set_cnt;
   int f_cnt = 0, u_cnt = 0;
   int i, p, q, t;
   int pairs_cnt = 0;            /* connection pairs counter */
   int links_cnt = 0;            /* number of links counter */
 
   /* initialize; all disconnected */
-  for (i = 0; i < N; i++)
+  for (i = 0; i < N; i++) 
     id[i] = i;
 
   /* read while there is data */
@@ -65,9 +66,33 @@ void quick_find(int *id, int N, FILE * fp)
     links_cnt++;
     printf(" %d %d\n", p, q);
   }
-  printf("QF: The number of links performed is %d for %d input pairs.\n",
+
+  fprintf(stdout,"\n");
+  set_cnt = N - links_cnt;/* total sets given by N - links */
+
+  t = -1;/* set label */
+  int j = 0;
+  for(j = 0; j < set_cnt; j++) {
+    for(i = 0; i < N; i++) {
+      if(id[i] != -1) { /* if node has not yet been printed */
+        if(t == -1) {
+          t = id[i];
+          fprintf(stdout, "%d", i);
+          id[i] = -1;
+        } else if( t == id[i]) {
+          fprintf(stdout, "-%d", i);
+          id[i] = -1;
+        }
+      }
+    }
+    fprintf(stdout, "\n");
+    t = -1;
+  }
+
+  fprintf(stdout, "Total sets: %d\n\n", set_cnt);
+  fprintf(stdout, "QF: The number of links performed is %d for %d input pairs.\n",
          links_cnt, pairs_cnt);
-  fprintf(stdout, "Number of nodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
+  fprintf(stdout, "\tNodes (N): %d\n\tFind operations: %d\n\tUnion operations: %d\n\tTotal operations: %d\n",N ,f_cnt, u_cnt, f_cnt + u_cnt);
 }
 
 
@@ -163,9 +188,10 @@ void weighted_quick_union(int *id, int N, FILE * fp)
     pairs_cnt++;
 
     /* do search first */
-    for (i = p; i != id[i]; i = id[i]);
+    f_cnt+=2;/* account for both first table read */
+    for (i = p; i != id[i]; i = id[i])
         f_cnt++;/* finding the root node */
-    for (j = q; j != id[j]; j = id[j]);
+    for (j = q; j != id[j]; j = id[j])
         f_cnt++;/* finding the root node */
 
     f_cnt++;/* (find op), know whether same root node */
@@ -176,6 +202,7 @@ void weighted_quick_union(int *id, int N, FILE * fp)
     }
 
     /* pair has new info; must perform union; pick right direction */
+    u_cnt++;/* reading from size tables */
     if (sz[i] < sz[j]) {
       u_cnt++;/* (union op) p pointing to q */
       id[i] = j;
@@ -230,8 +257,10 @@ void compressed_weighted_quick_union(int *id, int N, FILE * fp)
     pairs_cnt++;
 
     /* do search first */
-    for (i = p; i != id[i]; i = id[i]);
-    for (j = q; j != id[j]; j = id[j]);
+    for (i = p; i != id[i]; i = id[i])
+      f_cnt++;/* finding the root node */
+    for (j = q; j != id[j]; j = id[j])
+      f_cnt++;/* finding the root node */
 
     f_cnt++;/* (find op), know whether same root node */
     if (i == j) {
