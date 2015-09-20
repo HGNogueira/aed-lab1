@@ -53,13 +53,14 @@ int main(int argc, char *argv[])
     fprintf(stdout, "\t2 - Quick Union\n");
     fprintf(stdout, "\t3 - Weighted Quick Union\n");
     fprintf(stdout, "\t4 - Weighted Quick Union with Compression\n");
+    fprintf(stdout, "\t5 - Quicker Union (TESTING)\n");
     fprintf(stdout, "\n");
     fprintf(stdout, "\t0 - Exit\n");
 
     do {
       fprintf(stdout, "\nYour choice: (1,2,3,4,0) ");
       scanf("%d", &choice);
-    } while (choice < 0 || choice > 4);
+    } while (choice < 0 || choice > 5);
 
     if (choice == 0)
       break;
@@ -76,6 +77,9 @@ int main(int argc, char *argv[])
       break;
     case 4:
       compressed_weighted_quick_union(id, N, fp);
+      break;
+    case 5:
+      quicker_union(N, fp);
       break;
     default:
       fprintf(stderr, "Yikes\n");
